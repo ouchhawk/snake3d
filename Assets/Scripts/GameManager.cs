@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     private long initialsnakeLength = 99;
     private long currentSnakeLength = 10;
 
-    private static long ammoCap = 100;
+    private static long ammoCap = 1000;
     private bool isTimePassing = true;
     private const int rowSize = 1000;
     private const int columnSize = 10;
@@ -86,6 +86,7 @@ public class GameManager : MonoBehaviour
         newNode.AddComponent<SnakeAnimation>();
         newNode.GetComponent<SnakeAnimation>().snakeHead = newNode;
         newNode.GetComponent<SnakeAnimation>().AddStartingNodes();
+        newNode.GetComponent<SnakeAnimation>().UpdateNextTargets();
 
     }
 
@@ -100,6 +101,7 @@ public class GameManager : MonoBehaviour
             snakeHeadPosition.GetComponentInChildren<TextMeshProUGUI>().text = nodeList.Count.ToString();
         }
     }
+
     private void PopulateUnitDistributionTable()
     {
         for (int i = 0; i < columnSize; i++)
@@ -148,11 +150,16 @@ public class GameManager : MonoBehaviour
                         {
                             if (typeDistributionTable[column][row - 1] != UnitType.BOX)
                             {
-                                randomNumber = Random.Range(0, 110);
+                                randomNumber = Random.Range(0, 120);
 
                                 if (randomNumber > boxChance)
                                 {
                                     // select quintet
+                                    if(randomNumber > 110 && column == 1)
+                                    {
+                                        
+
+                                    }
                                     if (randomNumber > 100 && column == 1 &&
                                         typeDistributionTable[column + 2][row - 1] != UnitType.BOX &&
                                         typeDistributionTable[column + 4][row - 1] != UnitType.BOX &&
@@ -160,29 +167,53 @@ public class GameManager : MonoBehaviour
                                         typeDistributionTable[column + 8][row - 1] != UnitType.BOX
                                         )
                                     {
-                                        typeDistributionTable[column][row] = UnitType.BOX;
-                                        typeDistributionTable[column + 2][row] = UnitType.BOX;
-                                        typeDistributionTable[column + 4][row] = UnitType.BOX;
-                                        typeDistributionTable[column + 6][row] = UnitType.BOX;
-                                        typeDistributionTable[column + 8][row] = UnitType.BOX;
-                                        itemCount[column]++;
-                                        itemCount[column+2]++;
-                                        itemCount[column+4]++;
-                                        itemCount[column+6]++;
-                                        itemCount[column+8]++;
-                                        continue;
+                                        if(true)
+                                        {
+                                            typeDistributionTable[column][row] = UnitType.BOX;
+                                            typeDistributionTable[column + 2][row] = UnitType.BOX;
+                                            typeDistributionTable[column + 4][row] = UnitType.BOX;
+                                            typeDistributionTable[column + 6][row] = UnitType.BOX;
+                                            typeDistributionTable[column + 8][row] = UnitType.BOX;
+                                            itemCount[column]++;
+                                            itemCount[column+2]++;
+                                            itemCount[column+4]++;
+                                            itemCount[column+6]++;
+                                            itemCount[column+8]++;
+                                            continue;
+                                        }
                                     }
                                     else
                                     {
-                                        if(randomNumber > 90)
+                                        if (column == 1)
                                         {
-                                            typeDistributionTable[column][row] = UnitType.BOX;
-                                            itemCount[column]++;
+                                            int dividerRandomNumber = Random.Range(0, 100);
+                                            if (dividerRandomNumber < 50)
+                                            {
+                                                if (randomNumber > 80 && randomNumber <= 100)
+                                                {
+                                                    typeDistributionTable[column][row] = UnitType.BOX;
+                                                    itemCount[column]++;
+                                                }
+                                                else
+                                                {
+                                                    typeDistributionTable[column][row] = UnitType.FOOD;
+                                                }
+                                            }
                                         }
                                         else
                                         {
-                                            typeDistributionTable[column][row] = UnitType.FOOD;
+                                            if (randomNumber  > 90 && randomNumber <= 100)
+                                            {
+                                                typeDistributionTable[column][row] = UnitType.BOX;
+                                                itemCount[column]++;
+                                            }
+                                            else
+                                            {
+                                                typeDistributionTable[column][row] = UnitType.FOOD;
+                                            }
                                         }
+
+                                        
                                     }
                                 }
                                 else if (randomNumber > foodChance)
@@ -197,7 +228,6 @@ public class GameManager : MonoBehaviour
         }
                 Debug.Log("Dividers:" + itemCount[2] + ", " + itemCount[4] + ", " + itemCount[6] + ", " + itemCount[8] + ", ");
                 Debug.Log("Boxes:" + itemCount[1] + ", " + itemCount[3] + ", " + itemCount[5] + ", " + itemCount[7] + ", " + itemCount[9] + ", ");
-        
     }
 
     private void SpawnUnits()
