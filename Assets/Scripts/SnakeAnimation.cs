@@ -7,10 +7,12 @@ using UnityEngine.SceneManagement;
 public class SnakeAnimation : MonoBehaviour
 {
     private long ammoCap;
+    public float nodeDelay = 1f;
     private float scale = 1f;
     public float flowSpeed = 20f, translateAmount = 0;
     public ParticleSystem explositionParticle;
     public List<GameObject> nodeList;
+    public List<Vector3> positionList;
 
     public TMPro.TextMeshProUGUI label;
     //public TMPro.TextMeshProUGUI scoreText, gameOverScore;
@@ -60,7 +62,9 @@ public class SnakeAnimation : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        StartCoroutine( UpdateNextTargets());
+        initializeNodePositions();
+        //StartCoroutine( UpdateNextTargets());
+        StartCoroutine(headPositionRecorder());
     }
 
     void Update()
@@ -217,6 +221,69 @@ public class SnakeAnimation : MonoBehaviour
 
             yield return new WaitForSeconds(0.00833f);
         }
-        
     }
+
+    public IEnumerator enableInitialNodesOneByOne()
+    {
+        int nodeListCount = nodeList.Count;
+        for (int i=0; i< nodeListCount; i++)
+        {
+            enableNode(nodeList[i]);
+            yield return new WaitForSeconds(nodeDelay);
+        }
+    }
+
+    public IEnumerator moveNextPosition(GameObject node)
+    {
+        int positionCounter = 0;
+        while (true)
+        {
+            node.transform.position = positionList[positionCounter];
+            positionCounter++;
+            yield return new WaitForSeconds(0.02f);
+        }
+    }
+
+    public int addPosition(Vector3 vector)
+    {
+        positionList.Add(vector);
+        return 0;
+    }
+
+    public int removePosition(Vector3 vector)
+    {
+        positionList.Remove(vector);
+        return 0;
+
+    }
+
+    public void enableNode(GameObject node)
+    {
+        StartCoroutine(moveNextPosition(node));
+    }
+
+
+
+    public IEnumerator headPositionRecorder()
+    {
+        while (true)
+        {
+            addPosition(snakeHeadPosition.transform.position);
+            yield return new WaitForSeconds(0.02f);
+        }
+    }
+
+    public void initializeNodePositions()
+    {
+        int framePerSecond = 1 / 60;
+        int nodeCount = nodeList.Count;
+        int positionCountToAdd= framePerSecond*nodeCount;
+        for (int i=0; i< positionCountToAdd; i++)
+        {
+            positionList.Add(new Vector3(0f, 0f, 0f));
+        }
+    }
+
+
+
 }
