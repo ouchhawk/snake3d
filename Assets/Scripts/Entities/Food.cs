@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class Food : Enemy
 {
-    public Food(GameManager gameManager) : base(gameManager)
-    {
-    }
 
     public override void DecreaseSize()
     {

@@ -7,21 +7,16 @@ public abstract class Enemy : MonoBehaviour
     [SerializeField] private GameObject shapeObject;
     [SerializeField] private TMPro.TextMeshProUGUI label;
 
-    private GameManager _gameManager;
+    private GameManager gameManager;
     private int size;
 
     public int Size { get => size; set => size = value; }
     private Color Color { get; set; }
 
 
-    public Enemy(GameManager gameManager)
-    {
-        _gameManager = gameManager;
-    }
-
     private void Awake()
     {
-        _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
     public abstract void SetColor(Color color);

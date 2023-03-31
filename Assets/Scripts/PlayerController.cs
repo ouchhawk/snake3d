@@ -12,24 +12,15 @@ public class PlayerController : MonoBehaviour
     private float mouseDragSpeed = 10f;
 
     private Camera mainCamera;
-    private Vector3 velocity = Vector3.zero;
     private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
     public GameObject sphere;
-    public GameManager _gameManager;
+    public GameManager gameManager;
+    public Snake _snake;
 
-    public PlayerController(GameManager gameManager)
-    {
-        _gameManager = gameManager;
-    }
 
     private void Awake()
     {
         mainCamera = Camera.main;
-    }
-
-    private void Start()
-    {
-        sphere = _gameManager.nodeList[0];
     }
 
     private void OnEnable()

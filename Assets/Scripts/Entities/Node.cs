@@ -7,8 +7,4 @@ public class Node : MonoBehaviour
 
     public Transform NextTarget { get => nextTarget; set => nextTarget = value; }
 
-    void Update()
-    {
-
-    }
 }

@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class Box : Enemy
 {
-    public Box(GameManager gameManager) : base(gameManager)
-    {
-    }
 
     public override void SetColor(Color color)
     {

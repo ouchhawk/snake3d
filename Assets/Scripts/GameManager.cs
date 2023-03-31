@@ -6,69 +6,95 @@ using TMPro;
 using UnityEngine;
 using Color = UnityEngine.Color;
 
+
+public class Cell : MonoBehaviour
+{
+    private UnitType unitType;
+    private CellType cellType; 
+    private long value;
+
+    public Cell(CellType _cellType, UnitType _unitType, long _value)
+    {
+        cellType = _cellType;
+        unitType = _unitType;
+        value = _value;
+    }
+
+    public UnitType UnitType { get => unitType; set => unitType = value; }
+    public CellType CellType { get => cellType; set => cellType = value; }
+    public long Value { get => value; set => this.value = value; }
+}
+
 public class GameManager : MonoBehaviour
 {
-    private bool isGameOver = false;
-    private const int rowSize = 30, columnSize = 10;
+    private const int rowSize = 10, columnSize = 10;
     private float edgeLength = 10f,radius = 1.25f, leftEdgeCoordinateZ = 200f, leftEdgeCoordinateX = -30f;
-    private long initialsnakeLength = 15;
-    private static long ammoCap = 100;
+    private long initialSnakeLength = 15;
     public TextMeshProUGUI score;
     public Camera mainCamera;
-    public GameObject snakeHead, boxPrefab, foodPrefab, nodePrefab, dividerPrefab, background, gameOverUI;
+    public GameObject snakeHead, boxPrefab, foodPrefab, nodePrefab, dividerPrefab, background, gameOverUI, finishLinePrefab, finishLine;
     private Color nodeColor,backgroundColor,boxBaseColor,boxFloorColor, boxCeilColor;
-    private List<List<UnitType>> typeDistributionTable = new List<List<UnitType>>();
-    private List<List<long>> valueDistributionTable = new List<List<long>>();
-    public List<GameObject> nodeList;
+    private List<List<Cell>> cellGrid;
+    private bool isGameOver=false;
 
-    public static long AmmoCap { get => ammoCap; set => ammoCap = value; }
+    //private List<List<UnitType>> typeDistributionTable = new List<List<UnitType>>();
+    //private List<List<long>> valueDistributionTable = new List<List<long>>();
 
-    private void Awake()
-    {
-        //mainCamera = Camera.main;
-    }
-    private void Update()
-    {
-        UpdateSizeText();
-    }
+    public long InitialSnakeLength { get => initialSnakeLength; set => initialSnakeLength = value; }
+    public bool IsGameOver { get => isGameOver; set => isGameOver = value; }
 
     void Start()
     {
         PopulateUnitDistributionTable();
         DistributeUnits();
         SpawnUnits();
-        Vector3 spawnPos = new Vector3(0, 1.25f, 0);
-        GameObject newNode = Instantiate(nodePrefab, spawnPos, nodePrefab.transform.rotation);
-        nodeList.Add(newNode);
-        SetSnakeHead(newNode);
     }
 
-    private void SetSnakeHead(GameObject newNode)
-    {
-        newNode.AddComponent<SnakeAnimation>();
-        newNode.GetComponent<SnakeAnimation>().snakeHead = newNode;
-        newNode.GetComponent<SnakeAnimation>().AddNode(initialsnakeLength); 
-        mainCamera.GetComponent<CameraController>().player = newNode;
-        transform.GetComponent<PlayerController>().sphere = snakeHead;
-    }
-    
     private void PopulateUnitDistributionTable()
     {
-        for (int i = 0; i < columnSize; i++)
+        cellGrid = new List<List<Cell>>();
+        long value = 0;
+        UnitType unitType = UnitType.EMPTY;
+        CellType cellType = CellType.NONE;
+
+
+        for (int rowIndex = 0; rowIndex < rowSize; rowIndex++)
         {
-            typeDistributionTable.Add(new List<UnitType>());
-            valueDistributionTable.Add(new List<long>());
-            for (int j = 0; j < rowSize; j++)
+            cellGrid.Add(new List<Cell>());
+            for (int columnIndex = 0; columnIndex < columnSize; columnIndex++)
             {
-                typeDistributionTable[i].Add(UnitType.EMPTY);
-                valueDistributionTable[i].Add(0);
+                cellGrid[rowIndex].Add(new Cell(cellType, unitType, value));
+            }
+        }
+
+        for (int rowIndex = 0; rowIndex < rowSize; rowIndex++)
+        {
+            for (int columnIndex = 0; columnIndex < columnSize; columnIndex++)
+            {
+                cellType = CellType.NONE;
+                if (rowIndex % 2 == 0) //divider row
+                {
+                    if (columnIndex % 2 == 0) //divider column
+                    {
+                        cellType = CellType.DIVIDER;
+                    }
+                }
+                else //box row
+                {
+                    if (columnIndex % 2 == 1) //box column
+                    {
+                        cellType = CellType.BOX;
+                    }
+                }
+                cellGrid[rowIndex][columnIndex].CellType=cellType;
             }
         }
     }
+
     private void DistributeUnits()
     {
         System.Random random = new System.Random();
-        Double randomRowDouble, randomColDouble;
+        Double rowRandomDouble, colRandomDouble;
         double dividerChance = 0.33f, boxChance = 0.33f, foodChance = 0.5f;
 
         // Row: {DIV,BOX,DIV,BOX,DIV,BOX,DIV,BOX,DIV}
@@ -76,60 +102,49 @@ public class GameManager : MonoBehaviour
 
         for (int row = 1; row < rowSize; row++)
         {
-            Thread.Sleep(1); randomRowDouble = random.NextDouble();
+            Thread.Sleep(1); rowRandomDouble = random.NextDouble();
             for (int column = 1; column < columnSize; column++)
             {
-                Thread.Sleep(1); randomColDouble = random.NextDouble();
-                if (row % 2 == 0 || randomRowDouble > 0.75f) //divider row
+                Thread.Sleep(1); colRandomDouble = random.NextDouble();
+                if (cellGrid[row][column].CellType == CellType.DIVIDER)
                 {
-                    if (column % 2 == 0) // divider column
+                    if (colRandomDouble < dividerChance)
                     {
-                        if (randomColDouble < dividerChance)
-                        {
-                            typeDistributionTable[column][row] = UnitType.DIVIDER;
-                            itemCount[column]++;
-                        }
-                        else if (randomColDouble < foodChance)
-                        {
-                            typeDistributionTable[column][row] = UnitType.FOOD;
-                        }
+                        cellGrid[row][column].UnitType = UnitType.DIVIDER;
+                        itemCount[column]++;
+                    }
+                    else if (colRandomDouble < foodChance)
+                    {
+                        cellGrid[row][column].UnitType = UnitType.FOOD;
                     }
                 }
-                else // box row
+                else if (cellGrid[row][column].CellType == CellType.BOX)
                 {
-                    if (column % 2 == 1) //box column
+                    if (colRandomDouble < boxChance)
                     {
-                        if (randomColDouble < boxChance)
+                        // select quintet
+                        if (colRandomDouble < boxChance / 5 && column == 1)
                         {
-                            // select quintet
-                            if (randomColDouble < boxChance / 5 && column == 1 &&
-                                typeDistributionTable[column + 2][row - 1] != UnitType.BOX &&
-                                typeDistributionTable[column + 4][row - 1] != UnitType.BOX &&
-                                typeDistributionTable[column + 6][row - 1] != UnitType.BOX &&
-                                typeDistributionTable[column + 8][row - 1] != UnitType.BOX
-                                )
-                            {
-                                typeDistributionTable[column][row] = UnitType.BOX;
-                                typeDistributionTable[column + 2][row] = UnitType.BOX;
-                                typeDistributionTable[column + 4][row] = UnitType.BOX;
-                                typeDistributionTable[column + 6][row] = UnitType.BOX;
-                                typeDistributionTable[column + 8][row] = UnitType.BOX;
-                                itemCount[column]++;
-                                itemCount[column + 2]++;
-                                itemCount[column + 4]++;
-                                itemCount[column + 6]++;
-                                itemCount[column + 8]++;
-                                continue;
-                            }
-                            else if (randomColDouble < boxChance)
-                            {
-                                typeDistributionTable[column][row] = UnitType.BOX;
-                                itemCount[column]++;
-                            }
-                            else if (randomColDouble < foodChance)
-                            {
-                                typeDistributionTable[column][row] = UnitType.FOOD;
-                            }
+                            cellGrid[row][column].UnitType = UnitType.BOX;
+                            cellGrid[row][column+2].UnitType = UnitType.BOX;
+                            cellGrid[row][column+4].UnitType = UnitType.BOX;
+                            cellGrid[row][column+6].UnitType = UnitType.BOX;
+                            cellGrid[row][column+8].UnitType = UnitType.BOX;
+                            itemCount[column]++;
+                            itemCount[column + 2]++;
+                            itemCount[column + 4]++;
+                            itemCount[column + 6]++;
+                            itemCount[column + 8]++;
+                            continue;
+                        }
+                        else if (colRandomDouble < boxChance)
+                        {
+                            cellGrid[row][column].UnitType = UnitType.BOX;
+                            itemCount[column]++;
+                        }
+                        else if (colRandomDouble < foodChance)
+                        {
+                            cellGrid[row][column].UnitType = UnitType.FOOD;
                         }
                     }
                 }
@@ -141,45 +156,50 @@ public class GameManager : MonoBehaviour
 
     private void SpawnUnits()
     {
+        Vector3 lastPosition = new Vector3();
         for (int column = 1; column < columnSize; column++)
         {
             for (int row = 1; row < rowSize; row++)
             {
-                if(typeDistributionTable[column][row] == UnitType.DIVIDER)
+                if(cellGrid[row][column].UnitType == UnitType.DIVIDER)
                 {
-                    GameObject newUnit = Instantiate(dividerPrefab, 
-                        new Vector3(-(leftEdgeCoordinateX + (column-column/2) * edgeLength + edgeLength/2), 0, leftEdgeCoordinateZ + row * edgeLength), 
-                        dividerPrefab.transform.rotation);
+                    lastPosition = new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength + edgeLength / 2), 0, leftEdgeCoordinateZ + row * edgeLength);
+                    GameObject newUnit = Instantiate(dividerPrefab, lastPosition, dividerPrefab.transform.rotation);
                 }
-                else if (typeDistributionTable[column][row] == UnitType.FOOD)
+                else if (cellGrid[row][column].UnitType == UnitType.FOOD)
                 {
-                    GameObject newUnit = Instantiate(foodPrefab, 
-                        new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength), radius, leftEdgeCoordinateZ + row * edgeLength),
-                        foodPrefab.transform.rotation);
-                    newUnit.GetComponent<Enemy>().Size = UnityEngine.Random.Range(1, 100);
+                    lastPosition = new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength), radius, leftEdgeCoordinateZ + row * edgeLength);
+                    GameObject newUnit = Instantiate(foodPrefab, lastPosition, foodPrefab.transform.rotation);
+                    newUnit.GetComponent<Enemy>().Size = UnityEngine.Random.Range(1, 20);
                     newUnit.GetComponent<Enemy>().UpdateLabel();
 
                 }
-                else if(typeDistributionTable[column][row] == UnitType.BOX)
+                else if(cellGrid[row][column].UnitType == UnitType.BOX)
                 {
-                    GameObject newUnit = Instantiate(boxPrefab, 
-                        new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength), 0, leftEdgeCoordinateZ + row * edgeLength),
-                        boxPrefab.transform.rotation);
-                    newUnit.GetComponent<Enemy>().Size = UnityEngine.Random.Range(1, 100);
+                    lastPosition = new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength), 0, leftEdgeCoordinateZ + row * edgeLength);
+                    GameObject newUnit = Instantiate(boxPrefab, lastPosition, boxPrefab.transform.rotation);
+                    newUnit.GetComponent<Enemy>().Size = UnityEngine.Random.Range(1, 50);
                     newUnit.GetComponent<Enemy>().UpdateLabel();
                 }
             }
         }
-    }
-
-    private void UpdateSizeText()
-    {
-        snakeHead.GetComponentInChildren<TextMeshProUGUI>().text = nodeList.Count.ToString();
+        finishLine = Instantiate(finishLinePrefab,lastPosition + new Vector3(20f, 0f, 100f), finishLinePrefab.transform.rotation);
     }
 
     public IEnumerator BlinkText(Transform text)
     {
-        yield return new WaitForSeconds(1f);
+        while(true)
+        {
+            if (text.gameObject.active)
+            {
+                text.gameObject.SetActive(false);
+            }
+            else
+            {
+                text.gameObject.SetActive(true);
+            }
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     static void AutoSeedRandoms()
@@ -192,7 +212,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Game Over!");
         //mainCamera.gameObject.SetActive(false);
-        snakeHead.GetComponent<SnakeAnimation>().gameObject.SetActive(false);
-        snakeHead.GetComponent<SnakeAnimation>().gameObject.SetActive(false);
+        snakeHead.GetComponent<Snake>().gameObject.SetActive(false);
+        GetComponent<Snake>().gameObject.SetActive(false);
     }
 }
