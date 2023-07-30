@@ -2,17 +2,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class Snake : MonoBehaviour
 {
-    private long scoreCounter=0;
+    private long scoreCounter= SessionInformation.totalScore;
     private float flowSpeed, verticalMovementSpeed = 50f, explosionInterval = 0.1f, nodeRadius;
     public ParticleSystem explositionParticle;
     public List<GameObject> nodeList;
-    public TMPro.TextMeshProUGUI label, scoreText;
-    public GameObject nodePrefab, snakeHead, snakeHeadSphere, gameOverUi;
+    public TMPro.TextMeshProUGUI label, scoreText, levelText;
+    public GameObject nodePrefab, snakeHead, snakeHeadSphere, gameOverUi, continueText;
     private GameManager gameManagerScript;
     private Rigidbody snakeHeadRB;
+    private Transform cont;
 
     private void Awake()
     {
@@ -21,14 +22,17 @@ public class Snake : MonoBehaviour
         Vector3 spawnPos = new Vector3(0, nodeRadius / 2, 0);
         GameObject createdNode = Instantiate(nodePrefab, spawnPos, nodePrefab.transform.rotation);
         nodeList.Add(createdNode);
-        AddNode(gameManagerScript.InitialSnakeLength);
+        AddNode(SessionInformation.snakeLength);
 
         nodePrefab = (GameObject) Resources.Load("Prefabs/Node", typeof(GameObject));
         nodeRadius = nodePrefab.GetComponentInChildren<Transform>().localScale.x;
+        cont = gameManagerScript.gameOverUI.transform.Find("TapToContinue");
     }
     void Start()
     {
         snakeHeadRB = GetComponent<Rigidbody>();
+        UpdateLevelText();
+        UpdateScoreText(scoreCounter);
     }
 
     private void Update()
@@ -55,14 +59,15 @@ public class Snake : MonoBehaviour
 
     public void RemoveNode()
     {
-        if (nodeList.Count <= 1 )
+        if (nodeList.Count < 1 )
         {
-            Destroy(nodeList[0]);
             nodeList.RemoveAt(0);
+            Destroy(nodeList[0]);
+            Destroy(nodeList[0]);
             snakeHead.transform.position += new Vector3(0, 0, -nodeRadius * 2);
             UpdateLabel();
-
             gameManagerScript.GameOver();
+            snakeHead.GetComponent<Snake>().enabled = false;
         }
         else
         {
@@ -103,10 +108,19 @@ public class Snake : MonoBehaviour
         else if (collisionInfo.transform.name == "FinishLine(Clone)")
         {
             gameManagerScript.gameOverUI.transform.Find("StageClear").gameObject.SetActive(true);
-
             gameManagerScript.mainCamera.GetComponent<CameraController>().player=gameManagerScript.finishLine;
             Console.WriteLine("FINISH!!");
+            SaveState();
+            gameManagerScript.IsStageClear = true;
         }
+    }
+
+
+    public void SaveState()
+    {
+        SessionInformation.snakeLength = nodeList.Count;
+        SessionInformation.totalScore = scoreCounter;
+        SessionInformation.level++;
     }
 
     public IEnumerator BoxCollision(GameObject collider)
@@ -118,14 +132,17 @@ public class Snake : MonoBehaviour
             Destroy(collider);
             flowSpeed = verticalMovementSpeed;
         }
-        else if (nodeList.Count <= 1)
+        else if (nodeList.Count < 1)
         {
             //if (gameManagerScript.IsGameOver == false)
             if (true)
             {
+                verticalMovementSpeed = 0;
                 gameManagerScript.IsGameOver = true;
                 Transform gameOverUiText = gameManagerScript.gameOverUI.transform.Find("GameOver");
                 StartCoroutine(gameManagerScript.BlinkText(gameOverUiText));
+                scoreText.enabled = false;
+                cont.gameObject.SetActive(true);
                 gameManagerScript.GameOver();
             }
         }
@@ -146,14 +163,16 @@ public class Snake : MonoBehaviour
     }
     private void AnimateSnake()
     {
-        Vector3 newVector;
-
-        nodeList[0].transform.position = Vector3.MoveTowards(nodeList[0].transform.position, snakeHead.transform.position, (float)(CalculateDistanceBetweenTwoPoints(nodeList[0].transform.position, snakeHead.transform.position) * flowSpeed * Time.deltaTime));
-
-        for (int i = 1; i < nodeList.Count; i++)
+        if(!gameManagerScript.IsGameOver)
         {
-            newVector = (nodeList[i].transform.position - nodeList[i - 1].transform.position).normalized;
-            nodeList[i].transform.position = nodeList[i - 1].transform.position + newVector * nodeRadius *2 ;
+            Vector3 newVector;
+            nodeList[0].transform.position = Vector3.MoveTowards(nodeList[0].transform.position, snakeHead.transform.position, (float)(CalculateDistanceBetweenTwoPoints(nodeList[0].transform.position, snakeHead.transform.position) * flowSpeed * Time.deltaTime));
+
+            for (int i = 1; i < nodeList.Count; i++)
+            {
+                newVector = (nodeList[i].transform.position - nodeList[i - 1].transform.position).normalized;
+                nodeList[i].transform.position = nodeList[i - 1].transform.position + newVector * nodeRadius * 2;
+            }
         }
     }
 
@@ -164,5 +183,9 @@ public class Snake : MonoBehaviour
     private void UpdateScoreText(long score)
     {
         scoreText.text = "Score: " + score.ToString();
+    }
+    private void UpdateLevelText()
+    {
+        levelText.text = "Level " + SessionInformation.level.ToString();
     }
 }

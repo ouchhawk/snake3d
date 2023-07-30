@@ -6,7 +6,6 @@ using TMPro;
 using UnityEngine;
 using Color = UnityEngine.Color;
 
-
 public class Cell : MonoBehaviour
 {
     private UnitType unitType;
@@ -27,21 +26,22 @@ public class Cell : MonoBehaviour
 
 public class GameManager : MonoBehaviour
 {
-    private const int rowSize = 10, columnSize = 10;
+    private const int rowSize = 100, columnSize = 10;
     private float edgeLength = 10f,radius = 1.25f, leftEdgeCoordinateZ = 200f, leftEdgeCoordinateX = -30f;
-    private long initialSnakeLength = 15;
+    private long initialSnakeLength = SessionInformation.snakeLength;
     public TextMeshProUGUI score;
     public Camera mainCamera;
     public GameObject snakeHead, boxPrefab, foodPrefab, nodePrefab, dividerPrefab, background, gameOverUI, finishLinePrefab, finishLine;
     private Color nodeColor,backgroundColor,boxBaseColor,boxFloorColor, boxCeilColor;
     private List<List<Cell>> cellGrid;
-    private bool isGameOver=false;
+    private bool isGameOver=false, isStageClear=false;
 
     //private List<List<UnitType>> typeDistributionTable = new List<List<UnitType>>();
     //private List<List<long>> valueDistributionTable = new List<List<long>>();
 
     public long InitialSnakeLength { get => initialSnakeLength; set => initialSnakeLength = value; }
     public bool IsGameOver { get => isGameOver; set => isGameOver = value; }
+    public bool IsStageClear { get => isStageClear; set => isStageClear = value; }
 
     void Start()
     {
@@ -56,7 +56,6 @@ public class GameManager : MonoBehaviour
         long value = 0;
         UnitType unitType = UnitType.EMPTY;
         CellType cellType = CellType.NONE;
-
 
         for (int rowIndex = 0; rowIndex < rowSize; rowIndex++)
         {
@@ -170,7 +169,7 @@ public class GameManager : MonoBehaviour
                 {
                     lastPosition = new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength), radius, leftEdgeCoordinateZ + row * edgeLength);
                     GameObject newUnit = Instantiate(foodPrefab, lastPosition, foodPrefab.transform.rotation);
-                    newUnit.GetComponent<Enemy>().Size = UnityEngine.Random.Range(1, 20);
+                    newUnit.GetComponent<Enemy>().Size = UnityEngine.Random.Range(1, 15);
                     newUnit.GetComponent<Enemy>().UpdateLabel();
 
                 }
@@ -212,7 +211,11 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Game Over!");
         //mainCamera.gameObject.SetActive(false);
+        
+        snakeHead.GetComponent<PlayerController>().enabled = false;
         snakeHead.GetComponent<Snake>().gameObject.SetActive(false);
         GetComponent<Snake>().gameObject.SetActive(false);
+        snakeHead.GetComponent<Canvas>().GetComponentInChildren<TMPro.TextMeshProUGUI>().enabled = false;
+        snakeHead.active = false;
     }
 }

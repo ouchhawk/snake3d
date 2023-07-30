@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class PlayerController : MonoBehaviour
     private float mouseDragPhysicsSpeed = 10;
     [SerializeField]
     private float mouseDragSpeed = 10f;
+    private Mouse mouse;
 
     private Camera mainCamera;
     private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
@@ -27,19 +29,31 @@ public class PlayerController : MonoBehaviour
     {
         mouseClick.Enable();
         mouseClick.performed += MousePressed;
+        mouseClick.performed += OnAnyKey;
     }
 
     private void OnDisable()
     {
         mouseClick.performed -= MousePressed;
+        mouseClick.performed -= OnAnyKey;
         mouseClick.Disable();
+    }
+
+    private void OnAnyKey(InputAction.CallbackContext context)
+    {
+        if(gameManager.IsGameOver || gameManager.IsStageClear)
+            SceneManager.LoadScene("Minigame");
     }
 
     private void MousePressed(InputAction.CallbackContext context)
     {
+        if (context.started)
+        {
+            Debug.Log("Left mouse button clicked");
+            // Do something in response to the left mouse button click
+        }
         StartCoroutine(DragUpdate(sphere));
     }
-
     private IEnumerator DragUpdate(GameObject clickedObject)
     {
         Ray ray2 = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
