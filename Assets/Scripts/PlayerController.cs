@@ -41,8 +41,20 @@ public class PlayerController : MonoBehaviour
 
     private void OnAnyKey(InputAction.CallbackContext context)
     {
-        if(gameManager.IsGameOver || gameManager.IsStageClear)
+        if(gameManager.IsGameOver )
+        {
+            SessionInformation.ResetLevel();
+            SessionInformation.ResetSnakeLength();
+            SessionInformation.ResetScore();
+            gameManager.IsGameOver = false;
+            gameManager.IsStageClear = false;
             SceneManager.LoadScene("Minigame");
+        }
+        else if( gameManager.IsStageClear )
+        {
+            SceneManager.LoadScene("Minigame");
+        }
+        
     }
 
     private void MousePressed(InputAction.CallbackContext context)

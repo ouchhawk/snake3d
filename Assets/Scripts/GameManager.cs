@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using System.Threading;
 using TMPro;
 using UnityEngine;
@@ -211,7 +212,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Game Over!");
         //mainCamera.gameObject.SetActive(false);
-        
+        snakeHead.GetComponent<Snake>().label.enabled = false;
         snakeHead.GetComponent<PlayerController>().enabled = false;
         snakeHead.GetComponent<Snake>().gameObject.SetActive(false);
         GetComponent<Snake>().gameObject.SetActive(false);
