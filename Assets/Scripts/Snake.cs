@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 public class Snake : MonoBehaviour
 {
     private long scoreCounter= SessionInformation.totalScore;
@@ -14,6 +13,7 @@ public class Snake : MonoBehaviour
     private GameManager gameManagerScript;
     private Rigidbody snakeHeadRB;
     private Transform cont;
+    private PlayAudio audioSource;
 
     private void Awake()
     {
@@ -27,6 +27,7 @@ public class Snake : MonoBehaviour
         nodePrefab = (GameObject) Resources.Load("Prefabs/Node", typeof(GameObject));
         nodeRadius = nodePrefab.GetComponentInChildren<Transform>().localScale.x;
         cont = gameManagerScript.gameOverUI.transform.Find("TapToContinue");
+        audioSource = GetComponent<PlayAudio>();
     }
     void Start()
     {
@@ -94,6 +95,9 @@ public class Snake : MonoBehaviour
         {
             AddNode(collisionInfo.gameObject.GetComponent<Enemy>().Size);
             Destroy(collisionInfo.gameObject);
+            audioSource.PlayEat();
+
+
         }
         else if (collisionInfo.transform.name == "Box(Clone)")
         {
@@ -141,7 +145,7 @@ public class Snake : MonoBehaviour
                 gameManagerScript.IsGameOver = true;
                 Transform gameOverUiText = gameManagerScript.gameOverUI.transform.Find("GameOver");
                 StartCoroutine(gameManagerScript.BlinkText(gameOverUiText));
-                scoreText.enabled = false;
+                //scoreText.enabled = false;
                 cont.gameObject.SetActive(true);
                 gameManagerScript.GameOver();
             }
