@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 public class Snake : MonoBehaviour
 {
@@ -13,7 +14,9 @@ public class Snake : MonoBehaviour
     private GameManager gameManagerScript;
     private Rigidbody snakeHeadRB;
     private Transform cont;
-    private PlayAudio audioSource;
+    private AudioManager audioManager;
+    private double randomNumber;
+    System.Random random;
 
     private void Awake()
     {
@@ -27,7 +30,8 @@ public class Snake : MonoBehaviour
         nodePrefab = (GameObject) Resources.Load("Prefabs/Node", typeof(GameObject));
         nodeRadius = nodePrefab.GetComponentInChildren<Transform>().localScale.x;
         cont = gameManagerScript.gameOverUI.transform.Find("TapToContinue");
-        audioSource = GetComponent<PlayAudio>();
+        audioManager = GameObject.FindObjectOfType<AudioManager>().GetComponent<AudioManager>();
+        random = new System.Random();
     }
     void Start()
     {
@@ -95,9 +99,7 @@ public class Snake : MonoBehaviour
         {
             AddNode(collisionInfo.gameObject.GetComponent<Enemy>().Size);
             Destroy(collisionInfo.gameObject);
-            audioSource.PlayEat();
-
-
+            audioManager.PlayFoodAte();
         }
         else if (collisionInfo.transform.name == "Box(Clone)")
         {
@@ -116,6 +118,7 @@ public class Snake : MonoBehaviour
             Console.WriteLine("FINISH!!");
             SaveState();
             gameManagerScript.IsStageClear = true;
+            audioManager.PlayStageClear();
         }
     }
 
@@ -134,6 +137,7 @@ public class Snake : MonoBehaviour
         if (collider.GetComponent<Enemy>().Size <= 1)
         {
             Destroy(collider);
+            audioManager.PlayBoxDestroyed();
             flowSpeed = verticalMovementSpeed;
         }
         else if (nodeList.Count < 1)
@@ -152,7 +156,21 @@ public class Snake : MonoBehaviour
         }
         else
         {
-            collider.GetComponent<Enemy>().DecreaseSize();
+            
+            if (nodeList.Count%3 == 0)
+            {
+                audioManager.PlayHit2();
+            }
+            else 
+            {
+                collider.GetComponent<Enemy>().DecreaseSize();
+                Thread.Sleep(1);
+                randomNumber = random.NextDouble();
+                if (randomNumber < 0.15)
+                {
+                    audioManager.PlayHit1();
+                }
+            }
         }
         RemoveNode();
         scoreCounter++;

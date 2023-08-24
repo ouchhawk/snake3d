@@ -36,9 +36,7 @@ public class GameManager : MonoBehaviour
     private Color nodeColor,backgroundColor,boxBaseColor,boxFloorColor, boxCeilColor;
     private List<List<Cell>> cellGrid;
     private bool isGameOver=false, isStageClear=false;
-
-    //private List<List<UnitType>> typeDistributionTable = new List<List<UnitType>>();
-    //private List<List<long>> valueDistributionTable = new List<List<long>>();
+    private AudioManager audioManager;
 
     public long InitialSnakeLength { get => initialSnakeLength; set => initialSnakeLength = value; }
     public bool IsGameOver { get => isGameOver; set => isGameOver = value; }
@@ -51,7 +49,12 @@ public class GameManager : MonoBehaviour
         SpawnUnits();
     }
 
-    private void PopulateUnitDistributionTable()
+    private void Awake()
+    {
+        audioManager =  GameObject.FindObjectOfType<AudioManager>().GetComponent<AudioManager>();
+    }
+
+        private void PopulateUnitDistributionTable()
     {
         cellGrid = new List<List<Cell>>();
         long value = 0;
@@ -93,7 +96,7 @@ public class GameManager : MonoBehaviour
 
     private void DistributeUnits()
     {
-        System.Random random = new System.Random();
+        System.Random random = new System.Random(); 
         Double rowRandomDouble, colRandomDouble;
         double dividerChance = 0.33f, boxChance = 0.33f, foodChance = 0.5f;
 
@@ -211,6 +214,7 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         Debug.Log("Game Over!");
+        audioManager.PlayGameOver();
         //mainCamera.gameObject.SetActive(false);
         snakeHead.GetComponent<Snake>().label.enabled = false;
         snakeHead.GetComponent<PlayerController>().enabled = false;
