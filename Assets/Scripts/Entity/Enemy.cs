@@ -1,28 +1,33 @@
+using TMPro;
 using UnityEngine;
 using Color = UnityEngine.Color;
 
 public abstract class Enemy : MonoBehaviour
 {
 
-    [SerializeField] private GameObject shapeObject;
-    [SerializeField] private TMPro.TextMeshProUGUI label;
-
+    [SerializeField] 
+    protected GameObject shapeObject;
+    [SerializeField]
+    private TMPro.TextMeshProUGUI label;
     private GameManager gameManager;
     private int size;
+    private Color color;
 
+    public TextMeshProUGUI Label { get => label; set => label = value; }
+    public GameManager GameManager { get => gameManager; set => gameManager = value; }
     public int Size { get => size; set => size = value; }
-    private Color Color { get; set; }
+    public Color Color { get => color; set => color = value; }
 
+    public abstract void UpdateColor();
+    public abstract void DecreaseSize();
 
     private void Awake()
     {
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        GameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
-    public abstract void SetColor(Color color);
-    public abstract void DecreaseSize();
     public void UpdateLabel()
     {
-        label.text = Size.ToString();
+        Label.text = Size.ToString();
     }
 }

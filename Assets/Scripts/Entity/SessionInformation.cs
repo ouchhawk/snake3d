@@ -9,6 +9,9 @@ public class SessionInformation : MonoBehaviour
     private static long initialSnakeLength = 15;
     private static long initialLevel = 1;
 
+    public static long InitialTotalScore { get => initialTotalScore; set => initialTotalScore = value; }
+    public static long InitialSnakeLength { get => initialSnakeLength; set => initialSnakeLength = value; }
+    public static long InitialLevel { get => initialLevel; set => initialLevel = value; }
 
     public static void ResetScore()
     {

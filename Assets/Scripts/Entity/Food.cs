@@ -8,7 +8,7 @@ public class Food : Enemy
         throw new System.NotImplementedException();
     }
 
-    public override void SetColor(Color color)
+    public override void UpdateColor()
     {
         //shapeObject.transform.Find("Sphere").GetComponent<Renderer>().material.color = Color.blue;
     }
