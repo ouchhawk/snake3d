@@ -1,8 +1,10 @@
+using Assets.Scripts.DataAccess.Abstract;
+using Assets.Scripts.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using System.Threading;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using Color = UnityEngine.Color;
@@ -10,7 +12,7 @@ using Color = UnityEngine.Color;
 public class Cell : MonoBehaviour
 {
     private UnitType unitType;
-    private CellType cellType; 
+    private CellType cellType;
     private long value;
 
     public Cell(CellType _cellType, UnitType _unitType, long _value)
@@ -27,34 +29,47 @@ public class Cell : MonoBehaviour
 
 public class GameManager : MonoBehaviour
 {
+    IColorService colors;
     private const int rowSize = 100, columnSize = 10;
-    private float edgeLength = 10f,radius = 1.25f, leftEdgeCoordinateZ = 200f, leftEdgeCoordinateX = -30f;
+    private float edgeLength = 10f, radius = 1.25f, leftEdgeCoordinateZ = 200f, leftEdgeCoordinateX = -30f;
     private long initialSnakeLength = SessionInformation.snakeLength;
     public TextMeshProUGUI score;
     public Camera mainCamera;
     public GameObject snakeHead, boxPrefab, foodPrefab, nodePrefab, dividerPrefab, background, gameOverUI, finishLinePrefab, finishLine;
-    private Color nodeColor,backgroundColor,boxBaseColor,boxFloorColor, boxCeilColor;
+    private Color nodeColor, backgroundColor, boxBaseColor, boxFloorColor, boxCeilColor;
     private List<List<Cell>> cellGrid;
-    private bool isGameOver=false, isStageClear=false;
+    private bool isGameOver = false, isStageClear = false;
     private AudioManager audioManager;
 
     public long InitialSnakeLength { get => initialSnakeLength; set => initialSnakeLength = value; }
     public bool IsGameOver { get => isGameOver; set => isGameOver = value; }
     public bool IsStageClear { get => isStageClear; set => isStageClear = value; }
 
-    void Start()
+    async void Start()
     {
         PopulateUnitDistributionTable();
         DistributeUnits();
         SpawnUnits();
+        await InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        ColorService colors = new ColorService();
+        await colors.FetchColorPaletteAsync();
+
+        Debug.Log("Colors fetched.");
+
+        AudioManager audioManager = FindObjectOfType<AudioManager>().GetComponent<AudioManager>();
+        // Your additional logic here
     }
 
     private void Awake()
     {
-        audioManager =  GameObject.FindObjectOfType<AudioManager>().GetComponent<AudioManager>();
+        audioManager = GameObject.FindObjectOfType<AudioManager>().GetComponent<AudioManager>();
     }
 
-        private void PopulateUnitDistributionTable()
+    private void PopulateUnitDistributionTable()
     {
         cellGrid = new List<List<Cell>>();
         long value = 0;
@@ -89,19 +104,19 @@ public class GameManager : MonoBehaviour
                         cellType = CellType.BOX;
                     }
                 }
-                cellGrid[rowIndex][columnIndex].CellType=cellType;
+                cellGrid[rowIndex][columnIndex].CellType = cellType;
             }
         }
     }
 
     private void DistributeUnits()
     {
-        System.Random random = new System.Random(); 
+        System.Random random = new System.Random();
         Double rowRandomDouble, colRandomDouble;
         double dividerChance = 0.33f, boxChance = 0.33f, foodChance = 0.5f;
 
         // Row: {DIV,BOX,DIV,BOX,DIV,BOX,DIV,BOX,DIV}
-        int[] itemCount = { 0,0,0,0,0,0,0,0,0,0 };
+        int[] itemCount = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         for (int row = 1; row < rowSize; row++)
         {
@@ -129,10 +144,10 @@ public class GameManager : MonoBehaviour
                         if (colRandomDouble < boxChance / 5 && column == 1)
                         {
                             cellGrid[row][column].UnitType = UnitType.BOX;
-                            cellGrid[row][column+2].UnitType = UnitType.BOX;
-                            cellGrid[row][column+4].UnitType = UnitType.BOX;
-                            cellGrid[row][column+6].UnitType = UnitType.BOX;
-                            cellGrid[row][column+8].UnitType = UnitType.BOX;
+                            cellGrid[row][column + 2].UnitType = UnitType.BOX;
+                            cellGrid[row][column + 4].UnitType = UnitType.BOX;
+                            cellGrid[row][column + 6].UnitType = UnitType.BOX;
+                            cellGrid[row][column + 8].UnitType = UnitType.BOX;
                             itemCount[column]++;
                             itemCount[column + 2]++;
                             itemCount[column + 4]++;
@@ -164,7 +179,7 @@ public class GameManager : MonoBehaviour
         {
             for (int row = 1; row < rowSize; row++)
             {
-                if(cellGrid[row][column].UnitType == UnitType.DIVIDER)
+                if (cellGrid[row][column].UnitType == UnitType.DIVIDER)
                 {
                     lastPosition = new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength + edgeLength / 2), 0, leftEdgeCoordinateZ + row * edgeLength);
                     GameObject newUnit = Instantiate(dividerPrefab, lastPosition, dividerPrefab.transform.rotation);
@@ -177,7 +192,7 @@ public class GameManager : MonoBehaviour
                     newUnit.GetComponent<Enemy>().UpdateLabel();
 
                 }
-                else if(cellGrid[row][column].UnitType == UnitType.BOX)
+                else if (cellGrid[row][column].UnitType == UnitType.BOX)
                 {
                     lastPosition = new Vector3(-(leftEdgeCoordinateX + (column - column / 2) * edgeLength), 0, leftEdgeCoordinateZ + row * edgeLength);
                     GameObject newUnit = Instantiate(boxPrefab, lastPosition, boxPrefab.transform.rotation);
@@ -186,12 +201,12 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        finishLine = Instantiate(finishLinePrefab,lastPosition + new Vector3(20f, 0f, 100f), finishLinePrefab.transform.rotation);
+        finishLine = Instantiate(finishLinePrefab, lastPosition + new Vector3(20f, 0f, 100f), finishLinePrefab.transform.rotation);
     }
 
     public IEnumerator BlinkText(Transform text)
     {
-        while(true)
+        while (true)
         {
             if (text.gameObject.active)
             {

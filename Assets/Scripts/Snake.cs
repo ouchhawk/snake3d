@@ -5,7 +5,7 @@ using System.Threading;
 using UnityEngine;
 public class Snake : MonoBehaviour
 {
-    private long scoreCounter= SessionInformation.totalScore;
+    private long scoreCounter = SessionInformation.totalScore;
     private float flowSpeed, verticalMovementSpeed = 50f, explosionInterval = 0.1f, nodeRadius;
     public ParticleSystem explositionParticle;
     public List<GameObject> nodeList;
@@ -27,7 +27,7 @@ public class Snake : MonoBehaviour
         nodeList.Add(createdNode);
         AddNode(SessionInformation.snakeLength);
 
-        nodePrefab = (GameObject) Resources.Load("Prefabs/Node", typeof(GameObject));
+        nodePrefab = (GameObject)Resources.Load("Prefabs/Node", typeof(GameObject));
         nodeRadius = nodePrefab.GetComponentInChildren<Transform>().localScale.x;
         cont = gameManagerScript.gameOverUI.transform.Find("TapToContinue");
         audioManager = GameObject.FindObjectOfType<AudioManager>().GetComponent<AudioManager>();
@@ -64,7 +64,7 @@ public class Snake : MonoBehaviour
 
     public void RemoveNode()
     {
-        if (nodeList.Count < 1 )
+        if (nodeList.Count < 1)
         {
             nodeList.RemoveAt(0);
             Destroy(nodeList[0]);
@@ -78,11 +78,11 @@ public class Snake : MonoBehaviour
         {
             Destroy(nodeList[0]);
             nodeList.RemoveAt(0);
-            snakeHead.transform.position += new Vector3(0, 0, -nodeRadius*2);
+            snakeHead.transform.position += new Vector3(0, 0, -nodeRadius * 2);
             UpdateLabel();
         }
     }
-    
+
     public void UpdateLabel()
     {
         label.text = nodeList.Count.ToString();
@@ -114,7 +114,7 @@ public class Snake : MonoBehaviour
         else if (collisionInfo.transform.name == "FinishLine(Clone)")
         {
             gameManagerScript.gameOverUI.transform.Find("StageClear").gameObject.SetActive(true);
-            gameManagerScript.mainCamera.GetComponent<CameraController>().player=gameManagerScript.finishLine;
+            gameManagerScript.mainCamera.GetComponent<CameraController>().player = gameManagerScript.finishLine;
             Console.WriteLine("FINISH!!");
             SaveState();
             gameManagerScript.IsStageClear = true;
@@ -156,12 +156,12 @@ public class Snake : MonoBehaviour
         }
         else
         {
-            
-            if (nodeList.Count%3 == 0)
+
+            if (nodeList.Count % 3 == 0)
             {
                 audioManager.PlayHit2();
             }
-            else 
+            else
             {
                 collider.GetComponent<Enemy>().DecreaseSize();
                 Thread.Sleep(1);
@@ -185,7 +185,7 @@ public class Snake : MonoBehaviour
     }
     private void AnimateSnake()
     {
-        if(!gameManagerScript.IsGameOver)
+        if (!gameManagerScript.IsGameOver)
         {
             Vector3 newVector;
             nodeList[0].transform.position = Vector3.MoveTowards(nodeList[0].transform.position, snakeHead.transform.position, (float)(CalculateDistanceBetweenTwoPoints(nodeList[0].transform.position, snakeHead.transform.position) * flowSpeed * Time.deltaTime));

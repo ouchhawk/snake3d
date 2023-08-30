@@ -19,7 +19,7 @@ public class Box : Enemy
     public override void UpdateColor()
     {
         int index = Size % 5;
-        
+
         Color targetColor = colorPalette[index];
         Color prevColor = index == 0 ? targetColor : colorPalette[index];
         float weight = (Size - 1) % 25 / 25f;

@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnAnyKey(InputAction.CallbackContext context)
     {
-        if(gameManager.IsGameOver )
+        if (gameManager.IsGameOver)
         {
             SessionInformation.ResetLevel();
             SessionInformation.ResetSnakeLength();
@@ -50,11 +50,11 @@ public class PlayerController : MonoBehaviour
             gameManager.IsStageClear = false;
             SceneManager.LoadScene("Minigame");
         }
-        else if( gameManager.IsStageClear )
+        else if (gameManager.IsStageClear)
         {
             SceneManager.LoadScene("Minigame");
         }
-        
+
     }
 
     private void MousePressed(InputAction.CallbackContext context)
@@ -76,10 +76,10 @@ public class PlayerController : MonoBehaviour
         while (mouseClick.ReadValue<float>() != 0)
         {
             Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-            
+
             if (rb != null)
             {
-                Vector3 direction = new Vector3(ray.GetPoint(initialDistance).x - clickedObject.transform.position.x - mouseOffset,0, 0f);
+                Vector3 direction = new Vector3(ray.GetPoint(initialDistance).x - clickedObject.transform.position.x - mouseOffset, 0, 0f);
                 rb.velocity = direction * mouseDragPhysicsSpeed;
                 //rb.velocity = (direction.x * mouseDragPhysicsSpeed);
                 //transform.Translate(Vector3.right * Time.deltaTime * 100f);
@@ -88,10 +88,10 @@ public class PlayerController : MonoBehaviour
             else
             {
                 clickedObject.transform.position += new Vector3(
-                     ray.GetPoint(Vector3.Distance(clickedObject.transform.position, mainCamera.transform.position)).x - clickedObject.transform.position.x - mouseOffset, 0,0);
+                     ray.GetPoint(Vector3.Distance(clickedObject.transform.position, mainCamera.transform.position)).x - clickedObject.transform.position.x - mouseOffset, 0, 0);
                 yield return null;
             }
         }
-        rb.velocity = new Vector3(0,0,0);
+        rb.velocity = new Vector3(0, 0, 0);
     }
 }

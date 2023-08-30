@@ -5,7 +5,7 @@ using Color = UnityEngine.Color;
 public abstract class Enemy : MonoBehaviour
 {
 
-    [SerializeField] 
+    [SerializeField]
     protected GameObject shapeObject;
     [SerializeField]
     private TMPro.TextMeshProUGUI label;
